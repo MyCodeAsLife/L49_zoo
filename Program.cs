@@ -113,7 +113,23 @@ namespace L49_zoo
             _capacity = capacity;
         }
 
-        public void AddAnimal(string animalType)
+        public virtual void ShowInfo()
+        {
+            Console.WriteLine($"в количестве {_animals.Count} особей.\n\n");
+
+            foreach (var animal in _animals)
+                animal.ShowInfo();
+        }
+
+        protected virtual void FillAviary(string animalType)
+        {
+            int animalCount = RandomGenerator.GetRandomNumber(_capacity + 1);
+
+            for (int i = 0; i < animalCount; i++)
+                AddAnimal(animalType);
+        }
+
+        private void AddAnimal(string animalType)
         {
             if (_animals.Count < _capacity)
             {
@@ -130,23 +146,13 @@ namespace L49_zoo
                 Console.WriteLine("Вальер переполнен!");
             }
         }
-
-        public virtual void ShowInfo()
-        {
-            Console.WriteLine($"в количестве {_animals.Count} особей.\n\n");
-
-            foreach (var animal in _animals)
-                animal.ShowInfo();
-        }
-
-        protected abstract void FillAviary();
     }
 
     class Savannah : Aviary
     {
         public Savannah(int capacity) : base(capacity)
         {
-            FillAviary();
+            FillAviary("Lion");
         }
 
         public override void ShowInfo()
@@ -154,21 +160,13 @@ namespace L49_zoo
             Console.Write("Это саванный вальер. Здесь содержатся Львы ");
             base.ShowInfo();
         }
-
-        protected override void FillAviary()
-        {
-            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
-
-            for (int i = 0; i < countAnimal; i++)
-                AddAnimal("Lion");
-        }
     }
 
     class Forest : Aviary
     {
         public Forest(int capacity) : base(capacity)
         {
-            FillAviary();
+            FillAviary("Elephant");
         }
 
         public override void ShowInfo()
@@ -176,21 +174,13 @@ namespace L49_zoo
             Console.Write("Это лесной вальер. Здесь содержатся Слоны ");
             base.ShowInfo();
         }
-
-        protected override void FillAviary()
-        {
-            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
-
-            for (int i = 0; i < countAnimal; i++)
-                AddAnimal("Elephant");
-        }
     }
 
     class Desert : Aviary
     {
         public Desert(int capacity) : base(capacity)
         {
-            FillAviary();
+            FillAviary("Ostrich");
         }
 
         public override void ShowInfo()
@@ -198,35 +188,19 @@ namespace L49_zoo
             Console.Write("Это пустынный вальер. Здесь содержатся Страусы ");
             base.ShowInfo();
         }
-
-        protected override void FillAviary()
-        {
-            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
-
-            for (int i = 0; i < countAnimal; i++)
-                AddAnimal("Ostrich");
-        }
     }
 
     class Meadow : Aviary
     {
         public Meadow(int capacity) : base(capacity)
         {
-            FillAviary();
+            FillAviary("Horse");
         }
 
         public override void ShowInfo()
         {
             Console.Write("Это луговой вальер. Здесь содержатся Лошади ");
             base.ShowInfo();
-        }
-
-        protected override void FillAviary()
-        {
-            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
-
-            for (int i = 0; i < countAnimal; i++)
-                AddAnimal("Horse");
         }
     }
 
