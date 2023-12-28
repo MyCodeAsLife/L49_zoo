@@ -7,38 +7,32 @@ namespace L49_zoo
     {
         static void Main(string[] args)
         {
-            Random random = new Random();
-            ApplicationZoo myZoo = new ApplicationZoo(random);
+            ApplicationZoo myZoo = new ApplicationZoo();
 
             myZoo.Run();
         }
     }
 
-    class Error
-    {
-        public static void Show()
-        {
-            Console.Clear();
-            Console.WriteLine("Вы ввели некорректное значение.");
-        }
-    }
-
-    class FormaOutput
-    {
-        public const int DelimeterLenght = 75;
-        public const char DelimeterSymbol = '-';
-    }
-
     class ApplicationZoo
     {
-        private Random _random = new Random();
+        private const int DelimeterLenght = 75;
+        private const char DelimeterSymbol = '-';
+
         private List<Aviary> _aviaries = new List<Aviary>();
         private int _maxCapacityAviary = 12;
 
-        public ApplicationZoo(Random random)
+        public ApplicationZoo()
         {
-            _random = random;
-            FillZoo();
+            Fill();
+        }
+
+        private enum Menu
+        {
+            ChooseSavannahAviary = 1,
+            ChooseDesertAviary = 2,
+            ChooseForestAviary = 3,
+            ChooseMeadowAviary = 4,
+            ChooseExit = 5,
         }
 
         public void Run()
@@ -49,78 +43,97 @@ namespace L49_zoo
             {
                 Console.Clear();
 
-                Console.WriteLine($"Добро пожаловать в наш зоопарк!\n" + new string(FormaOutput.DelimeterSymbol, FormaOutput.DelimeterLenght) + $"\n" +
-                                  $"{(int)Menu.ChooseSavannahAviary + 1} - Подойти к саванному вальеру.\n{(int)Menu.ChooseDesertAviary + 1} - " +
-                                  $"Подойти к пустынному вальеру.\n{(int)Menu.ChooseForestAviary + 1} - Подойти к лесному вальеру.\n" +
-                                  $"{(int)Menu.ChooseMeadowAviary + 1} - Подойти к луговому вальеру.\n{(int)Menu.ChooseExit + 1} - " +
-                                  $"Выйти из программы.\n" + new string(FormaOutput.DelimeterSymbol, FormaOutput.DelimeterLenght));
+                Console.WriteLine($"Добро пожаловать в наш зоопарк!\n" + new string(DelimeterSymbol, DelimeterLenght) + $"\n" +
+                                  $"{(int)Menu.ChooseSavannahAviary} - Подойти к саванному вальеру.\n{(int)Menu.ChooseDesertAviary} - " +
+                                  $"Подойти к пустынному вальеру.\n{(int)Menu.ChooseForestAviary} - Подойти к лесному вальеру.\n" +
+                                  $"{(int)Menu.ChooseMeadowAviary} - Подойти к луговому вальеру.\n{(int)Menu.ChooseExit} - " +
+                                  $"Выйти из программы.\n" + new string(DelimeterSymbol, DelimeterLenght));
 
                 Console.Write("Выберите пункт меню: ");
+                int menuLenght = Enum.GetNames(typeof(Menu)).Length;
 
-                if (int.TryParse(Console.ReadLine(), out int menuItem))
+                if (int.TryParse(Console.ReadLine(), out int menuNumber))
                 {
                     Console.Clear();
-                    menuItem--;
 
-                    if (menuItem < (int)Menu.Max || menuItem >= 0)
+                    if (menuNumber < menuLenght || menuNumber >= 0)
                     {
-                        if ((Menu)menuItem == Menu.ChooseExit)
+                        if ((Menu)menuNumber == Menu.ChooseExit)
                             isOpen = false;
                         else
-                            ApproachEnclosure(menuItem);
+                            ApproachEnclosure(menuNumber);
                     }
                     else
                     {
-                        Error.Show();
+                        ShowError();
                     }
                 }
                 else
                 {
-                    Error.Show();
+                    ShowError();
                 }
 
-                Console.WriteLine(new string(FormaOutput.DelimeterSymbol, FormaOutput.DelimeterLenght) + "\nДля продолжения нажмите любую кнопку...");
+                Console.WriteLine(new string(DelimeterSymbol, DelimeterLenght) + "\nДля продолжения нажмите любую кнопку...");
                 Console.ReadKey(true);
             }
         }
 
-        private void ApproachEnclosure(int menuItem)
+        private void ApproachEnclosure(int menuNumber)
         {
-            _aviaries[menuItem].ShowInfo();
+            _aviaries[menuNumber].ShowInfo();
         }
 
-        private void FillZoo()
+        private void Fill()
         {
-            _aviaries.Add(new Savannah(_random, _maxCapacityAviary));
-            _aviaries.Add(new Desert(_random, _maxCapacityAviary));
-            _aviaries.Add(new Forest(_random, _maxCapacityAviary));
-            _aviaries.Add(new Meadow(_random, _maxCapacityAviary));
+            _aviaries.Add(new Savannah(_maxCapacityAviary));
+            _aviaries.Add(new Desert(_maxCapacityAviary));
+            _aviaries.Add(new Forest(_maxCapacityAviary));
+            _aviaries.Add(new Meadow(_maxCapacityAviary));
+        }
+
+        private void ShowError()
+        {
+            Console.Clear();
+            Console.WriteLine("Вы ввели некорректное значение.");
         }
     }
 
     abstract class Aviary
     {
-        protected Random _random;
+        private List<AnimalGenerator> _animalList;
         private List<Animal> _animals = new List<Animal>();
         protected int _capacity;
 
-        public Aviary(Random random, int capacity)
+        public Aviary(int capacity)
         {
-            _random = random;
+            _animalList = new List<AnimalGenerator> { new LionAnimalGenerator(),
+                                                      new ElephantAnimalGenerator(),
+                                                      new OstrichAnimalGenerator(),
+                                                      new HorseAnimalGenerator() };
             _capacity = capacity;
         }
 
-        public void AddAnimal(Animal animal)
+        public void AddAnimal(string animalType)
         {
             if (_animals.Count < _capacity)
-                _animals.Add(animal);
+            {
+                foreach (var animal in _animalList)
+                {
+                    if (animal.GetAnimalType().ToLower() == animalType.ToLower())
+                        _animals.Add(animal.Create());
+                    else
+                        Console.WriteLine("Нет такого животного.");
+                }
+            }
             else
+            {
                 Console.WriteLine("Вальер переполнен!");
+            }
         }
 
         public virtual void ShowInfo()
         {
-            Console.WriteLine($"в количестве {_animals.Count} особей.\n" + new string(FormaOutput.DelimeterSymbol, FormaOutput.DelimeterLenght));
+            Console.WriteLine($"в количестве {_animals.Count} особей.\n\n");
 
             foreach (var animal in _animals)
                 animal.ShowInfo();
@@ -131,7 +144,7 @@ namespace L49_zoo
 
     class Savannah : Aviary
     {
-        public Savannah(Random random, int capacity) : base(random, capacity)
+        public Savannah(int capacity) : base(capacity)
         {
             FillAviary();
         }
@@ -144,38 +157,16 @@ namespace L49_zoo
 
         protected override void FillAviary()
         {
-            int countAnimal = _random.Next(_capacity + 1);
+            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
 
             for (int i = 0; i < countAnimal; i++)
-                AddAnimal(new Lion((AnimalGender)_random.Next((int)AnimalGender.Max), "РРРРаарррр", (AnimalState)_random.Next((int)AnimalState.Max), _random));
-        }
-    }
-
-    class Desert : Aviary
-    {
-        public Desert(Random random, int capacity) : base(random, capacity)
-        {
-            FillAviary();
-        }
-
-        public override void ShowInfo()
-        {
-            Console.Write("Это пустынный вальер. Здесь содержатся Страусы ");
-            base.ShowInfo();
-        }
-
-        protected override void FillAviary()
-        {
-            int countAnimal = _random.Next(_capacity + 1);
-
-            for (int i = 0; i < countAnimal; i++)
-                AddAnimal(new Ostrich((AnimalGender)_random.Next((int)AnimalGender.Max), "Чирик чирик", (AnimalState)_random.Next((int)AnimalState.Max), _random));
+                AddAnimal("Lion");
         }
     }
 
     class Forest : Aviary
     {
-        public Forest(Random random, int capacity) : base(random, capacity)
+        public Forest(int capacity) : base(capacity)
         {
             FillAviary();
         }
@@ -188,16 +179,38 @@ namespace L49_zoo
 
         protected override void FillAviary()
         {
-            int countAnimal = _random.Next(_capacity + 1);
+            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
 
             for (int i = 0; i < countAnimal; i++)
-                AddAnimal(new Elephant((AnimalGender)_random.Next((int)AnimalGender.Max), "Дуууууу", (AnimalState)_random.Next((int)AnimalState.Max), _random));
+                AddAnimal("Elephant");
+        }
+    }
+
+    class Desert : Aviary
+    {
+        public Desert(int capacity) : base(capacity)
+        {
+            FillAviary();
+        }
+
+        public override void ShowInfo()
+        {
+            Console.Write("Это пустынный вальер. Здесь содержатся Страусы ");
+            base.ShowInfo();
+        }
+
+        protected override void FillAviary()
+        {
+            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
+
+            for (int i = 0; i < countAnimal; i++)
+                AddAnimal("Ostrich");
         }
     }
 
     class Meadow : Aviary
     {
-        public Meadow(Random random, int capacity) : base(random, capacity)
+        public Meadow(int capacity) : base(capacity)
         {
             FillAviary();
         }
@@ -210,10 +223,10 @@ namespace L49_zoo
 
         protected override void FillAviary()
         {
-            int countAnimal = _random.Next(_capacity + 1);
+            int countAnimal = RandomGenerator.GetRandomNumber(_capacity + 1);
 
             for (int i = 0; i < countAnimal; i++)
-                AddAnimal(new Horse((AnimalGender)_random.Next((int)AnimalGender.Max), "Игого", (AnimalState)_random.Next((int)AnimalState.Max), _random));
+                AddAnimal("Horse");
         }
     }
 
@@ -224,26 +237,24 @@ namespace L49_zoo
         private int _age;
         private AnimalGender _gender;
         private AnimalState _state;
-        Random _random;
 
-        public Animal(AnimalGender gender, string call, AnimalState state, Random random)
+        public Animal(AnimalGender gender, string call, AnimalState state)
         {
             _gender = gender;
             _call = call;
             _state = state;
-            _random = random;
-            _age = _random.Next(_maxAge + 1);
+            _age = RandomGenerator.GetRandomNumber(_maxAge + 1);
         }
 
         public virtual void ShowInfo()
         {
-            Console.WriteLine($"{_state}. Его возраст: {_age}. Пол: {_gender}. Он издает звук \"{_call}\".");
+            Console.WriteLine($"{_state}. Возраст особи: {_age}.\tПол: {_gender}.\tОн издает звук \"{_call}\".");
         }
     }
 
     class Lion : Animal
     {
-        public Lion(AnimalGender gender, string call, AnimalState state, Random random) : base(gender, call, state, random) { }
+        public Lion(AnimalGender gender, string call, AnimalState state) : base(gender, call, state) { }
 
         public override void ShowInfo()
         {
@@ -254,7 +265,7 @@ namespace L49_zoo
 
     class Elephant : Animal
     {
-        public Elephant(AnimalGender gender, string call, AnimalState state, Random random) : base(gender, call, state, random) { }
+        public Elephant(AnimalGender gender, string call, AnimalState state) : base(gender, call, state) { }
 
         public override void ShowInfo()
         {
@@ -265,7 +276,7 @@ namespace L49_zoo
 
     class Ostrich : Animal
     {
-        public Ostrich(AnimalGender gender, string call, AnimalState state, Random random) : base(gender, call, state, random) { }
+        public Ostrich(AnimalGender gender, string call, AnimalState state) : base(gender, call, state) { }
 
         public override void ShowInfo()
         {
@@ -276,13 +287,59 @@ namespace L49_zoo
 
     class Horse : Animal
     {
-        public Horse(AnimalGender gender, string call, AnimalState state, Random random) : base(gender, call, state, random) { }
+        public Horse(AnimalGender gender, string call, AnimalState state) : base(gender, call, state) { }
 
         public override void ShowInfo()
         {
             Console.Write("Эта Лошадь ");
             base.ShowInfo();
         }
+    }
+
+    abstract class AnimalGenerator
+    {
+        protected List<string> Gender = new List<string>(Enum.GetNames(typeof(AnimalGender)));
+
+        public abstract Animal Create();
+
+        public abstract string GetAnimalType();
+    }
+
+    class LionAnimalGenerator : AnimalGenerator
+    {
+        public override Animal Create() => new Lion((AnimalGender)RandomGenerator.GetRandomNumber(Gender.Count), "РРРРаарррр", (AnimalState)RandomGenerator.GetRandomNumber(Gender.Count));
+
+        public override string GetAnimalType() => "Lion";
+    }
+
+    class ElephantAnimalGenerator : AnimalGenerator
+    {
+        public override Animal Create() => new Elephant((AnimalGender)RandomGenerator.GetRandomNumber(Gender.Count), "Дуууууу", (AnimalState)RandomGenerator.GetRandomNumber(Gender.Count));
+
+        public override string GetAnimalType() => "Elephant";
+    }
+
+    class OstrichAnimalGenerator : AnimalGenerator
+    {
+        public override Animal Create() => new Ostrich((AnimalGender)RandomGenerator.GetRandomNumber(Gender.Count), "Чирик чирик", (AnimalState)RandomGenerator.GetRandomNumber(Gender.Count));
+
+        public override string GetAnimalType() => "Ostrich";
+    }
+
+    class HorseAnimalGenerator : AnimalGenerator
+    {
+        public override Animal Create() => new Horse((AnimalGender)RandomGenerator.GetRandomNumber(Gender.Count), "Игого", (AnimalState)RandomGenerator.GetRandomNumber(Gender.Count));
+
+        public override string GetAnimalType() => "Horse";
+    }
+
+    static class RandomGenerator
+    {
+        private static Random s_random = new Random();
+
+        public static int GetRandomNumber(int minValue, int maxValue) => s_random.Next(minValue, maxValue);
+
+        public static int GetRandomNumber(int maxValue) => s_random.Next(maxValue);
     }
 
     enum AnimalState
@@ -292,24 +349,12 @@ namespace L49_zoo
         Lies,
         Eating,
         Sleeping,
-        Max,
     }
 
     enum AnimalGender
     {
         Male,
         Female,
-        CombatHelicopter,   // Простите не удержался =) Я Честно сопротивлялся, но этот мем огрел меня по затылку стулом и пока я вылазил из под стола, сделал свое грязное дело
-        Max,
-    }
-
-    enum Menu
-    {
-        ChooseSavannahAviary,
-        ChooseDesertAviary,
-        ChooseForestAviary,
-        ChooseMeadowAviary,
-        ChooseExit,
-        Max,
+        CombatHelicopter,
     }
 }
